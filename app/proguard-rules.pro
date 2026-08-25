@@ -1,0 +1,2 @@
+-keepclassmembers class * extends android.webkit.WebViewClient { *; }
+-keep public class com.noorwallet.app.MainActivity { public <init>(); }
