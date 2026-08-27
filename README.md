@@ -1,4 +1,4 @@
-# نور المحفظة — Android WebView
+# زاد — Android WebView
 
 تطبيق محفظة إلكترونية عربي RTL بواجهة WebView أصلية، مبني بأندرويد Gradle Plugin 8.5.2 و Kotlin 2.0.20.
 
