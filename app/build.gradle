@@ -35,7 +35,21 @@ android {
         release {
             minifyEnabled true
             shrinkResources true
-            signingConfig signingConfigs.release.storeFile ? signingConfigs.release : signingConfigs.debug
+            // لا تراجع صامت لتوقيع debug: إن غاب الـ Keystore الحقيقي، يفشل البناء
+            // بوضوح بدل إنتاج APK "release" موقّع فعلياً بمفتاح debug غير الآمن.
+            // للتجاوز المتعمد أثناء الاختبار المحلي فقط:
+            //   gradle :app:assembleRelease -PallowDebugSigningForRelease
+            if (signingConfigs.release.storeFile) {
+                signingConfig signingConfigs.release
+            } else if (project.hasProperty('allowDebugSigningForRelease')) {
+                signingConfig signingConfigs.debug
+            } else {
+                throw new GradleException(
+                    "بناء release بلا Keystore حقيقي. عرّف ANDROID_KEYSTORE_PATH/PASSWORD/" +
+                    "ANDROID_KEY_ALIAS/PASSWORD، أو مرّر -PallowDebugSigningForRelease " +
+                    "لتجاوز الفحص عمداً لأغراض الاختبار المحلي فقط (لا يُستخدم للنشر أبداً)."
+                )
+            }
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug { minifyEnabled false }

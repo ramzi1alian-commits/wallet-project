@@ -4,9 +4,9 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0B111E"><title>زاد | محفظة ذكية</title>
 <link rel="stylesheet" href="css/style.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-<script src="js/i18n.js"></script><script src="js/tafqeet.js"></script>
+<script src="js/i18n.js"></script><script src="js/tafqeet.js"></script><script src="js/crypto-store.js"></script>
 </head>
-<body data-theme="gold" data-mode="dark" data-font="plex" data-density="comfortable">
+<body data-theme="gold" data-mode="dark" data-font="plex" data-density="comfortable" oncontextmenu="return false">
 <script>
 (function(){
   var t=localStorage.getItem('nw_theme')||'gold', m=localStorage.getItem('nw_mode')||'dark',
@@ -19,7 +19,7 @@
 <!-- ===== شاشة إنشاء حساب (تظهر أول مرة فقط) ===== -->
 <section id="register" class="screen"><div class="login-wrap"><div class="login-box">
   <div class="brand"><div class="brand-mark"><i class="fa-solid fa-shield-halved"></i></div><span>زاد</span></div>
-  <div class="step-dots"><span id="rd1" class="active"></span><span id="rd2"></span><span id="rd3"></span></div>
+  <div class="step-dots"><span id="rd1" class="active"></span><span id="rd2"></span><span id="rd3"></span><span id="rd4"></span></div>
 
   <div id="reg-step1">
     <h1 class="login-title">إنشاء حساب جديد</h1><p class="login-sub">بياناتك تبقى محفوظة على جهازك فقط</p>
@@ -40,7 +40,14 @@
     <div class="pin-error" id="reg-err2"></div>
   </div>
 
-  <div class="secure-note"><i class="fa-solid fa-lock"></i> رمزك يُشفّر ويُحفظ محلياً على جهازك فقط</div>
+  <div id="reg-step4" class="hidden">
+    <h1 class="login-title">رمز الطوارئ (اختياري)</h1><p class="login-sub">رمز مختلف عن رمزك الأساسي — إدخاله يفتح "وضع آمن" بأرقام غير حقيقية بدل حسابك الفعلي، مفيد إن أُجبرت على فتح التطبيق أمام أحد</p>
+    <div id="reg-pin-display3" class="pin-display">••••</div><div id="reg-pin-pad3" class="pin-pad"></div>
+    <div class="pin-error" id="reg-err3"></div>
+    <button class="secondary-btn" onclick="skipPanicSetup()">تخطي، لا أحتاج هذه الميزة الآن</button>
+  </div>
+
+  <div class="secure-note"><i class="fa-solid fa-shield-halved"></i> رمزك يُشتق عبره مفتاح تشفير AES-GCM محلي لحماية بياناتك على جهازك فقط</div>
 </div></div></section>
 
 <!-- ===== شاشة تسجيل الدخول ===== -->
@@ -59,13 +66,13 @@
 <div class="welcome" id="dash-welcome">أهلاً،</div><h1 style="margin:0 0 20px;font-size:27px">مركزك المالي الذكي</h1>
 <div class="hero"><div class="balance-card"><div class="eyebrow">إجمالي الأصول <button class="link" onclick="privacyToggle()" id="privacy-btn">خصوصية <i class="fa-regular fa-eye"></i></button></div><div id="main-balance" class="balance private-value">0.00 <small>ر.ي</small></div><div class="balance-foot"><span><i class="fa-solid fa-shield"></i> حساب جديد وآمن</span><span>مزامنة آمنة الآن</span></div></div><div class="mini-grid"><div class="mini-card"><i class="fa-solid fa-arrow-down"></i><b id="mini-in" class="private-value">0 <small>ر.ي</small></b><small>الإيداعات</small></div><div class="mini-card"><i class="fa-solid fa-arrow-up"></i><b id="mini-out" class="private-value">0 <small>ر.ي</small></b><small>المصروفات</small></div></div></div>
 <div class="currency-strip"><button class="currency active" onclick="setCurrency('YER',this)">ر.ي<br><small>ريال يمني</small></button><button class="currency" onclick="setCurrency('SAR',this)">ر.س<br><small>ريال سعودي</small></button><button class="currency" onclick="setCurrency('USD',this)">$<br><small>دولار أمريكي</small></button><span id="rate-note">سعر محاكاة آمن · 1 SAR = 70 YER</span></div>
-<div class="subwallets"><div class="subwallet"><i class="fa-solid fa-wallet"></i><b>المحفظة الرئيسية</b><span class="private-value">5,400,000 ر.ي</span></div><div class="subwallet"><i class="fa-solid fa-bullseye"></i><b>هدف الادخار</b><span class="private-value">850,000 ر.ي</span></div><div class="subwallet"><i class="fa-solid fa-children"></i><b>مصروف الأطفال</b><span class="private-value">125,000 ر.ي</span></div></div>
+<div class="subwallets"><div class="subwallet"><i class="fa-solid fa-wallet"></i><b>المحفظة الرئيسية</b><span class="private-value" id="sub-main">0 ر.ي</span></div></div>
 <div class="actions actions-8"><button class="action" onclick="openScreen('transfer')"><i class="fa-solid fa-paper-plane"></i><span>تحويل</span></button><button class="action" onclick="openScreen('wallets')"><i class="fa-solid fa-right-left"></i><span>محافظ يمنية</span></button><button class="action" onclick="openScreen('bills')"><i class="fa-solid fa-file-invoice-dollar"></i><span>فواتير</span></button><button class="action" onclick="openScreen('cash')"><i class="fa-solid fa-money-bill-transfer"></i><span>سحب/إيداع</span></button><button class="action" onclick="openScreen('store')"><i class="fa-solid fa-store"></i><span>شحن ورصيد</span></button><button class="action" onclick="openScreen('merchants')"><i class="fa-solid fa-shop"></i><span>التجار</span></button><button class="action" onclick="openScreen('split')"><i class="fa-solid fa-people-group"></i><span>تقسيم فاتورة</span></button><button class="action" onclick="openScreen('transfer')"><i class="fa-solid fa-qrcode"></i><span>مسح QR</span></button><button class="action" onclick="openScreen('analytics')"><i class="fa-solid fa-chart-pie"></i><span>الإحصاءات</span></button></div>
-<div class="section-head"><h2>شبكة الحوالات المحلية</h2><button class="link">عرض الخدمات</button></div><div class="remit-row"><button onclick="alert('محاكاة: تم اختيار الكريمي')"><i class="fa-solid fa-building-columns"></i>الكريمي</button><button onclick="alert('محاكاة: تم اختيار النجم')"><i class="fa-solid fa-star"></i>النجم</button><button onclick="alert('محاكاة: تم اختيار كريمي إكسبرس')"><i class="fa-solid fa-truck-fast"></i>كريمي إكسبرس</button></div>
-<div class="section-head"><h2>آخر العمليات</h2><button class="link">عرض الكل</button></div><div class="panel" id="tx-list"></div>
+<div class="section-head"><h2>شبكة الحوالات المحلية</h2><button class="link" onclick="openScreen('wallets')">عرض الخدمات</button></div><div class="remit-row"><button onclick="payRemittance('الكريمي')"><i class="fa-solid fa-building-columns"></i>الكريمي</button><button onclick="payRemittance('النجم')"><i class="fa-solid fa-star"></i>النجم</button><button onclick="payRemittance('كريمي إكسبرس')"><i class="fa-solid fa-truck-fast"></i>كريمي إكسبرس</button></div>
+<div class="section-head"><h2>آخر العمليات</h2><button class="link" id="tx-viewall" onclick="toggleAllTx()">عرض الكل</button></div><div class="panel" id="tx-list"></div>
 </div></main>
 
-<section id="transfer" class="screen inner-screen"><div class="app"><div class="topbar"><button class="icon-btn" onclick="goHome()"><i class="fa-solid fa-arrow-right"></i></button><h2>تحويل ودفع</h2><span></span></div><div class="tabs"><button class="active">رقم الجوال</button><button>معرّف المحفظة</button><button onclick="alert('كاميرا QR جاهزة للربط عبر CameraX')">ماسح QR</button></div><div class="panel form-panel"><div class="field"><label>المستلم</label><input id="recipient" type="tel" aria-label="المستلم"></div><div class="field"><label>المبلغ</label><div class="amount-input"><input id="transfer-amount" type="number" min="0" oninput="renderWords(this.value,'transfer-words')" aria-label="المبلغ"><select id="transfer-currency" onchange="renderWords(document.getElementById('transfer-amount').value,'transfer-words')"><option>YER</option><option>SAR</option><option>USD</option></select></div><div id="transfer-words" class="words"></div></div><div class="field"><label>ملاحظة اختيارية</label><input aria-label="الملاحظة"></div><div class="fee-box">العمولة التقديرية: <b id="transfer-fee">0 ر.ي</b></div><button class="primary" onclick="doTransfer()">تأكيد التحويل <i class="fa-solid fa-lock"></i></button></div></div></section>
+<section id="transfer" class="screen inner-screen"><div class="app"><div class="topbar"><button class="icon-btn" onclick="goHome()"><i class="fa-solid fa-arrow-right"></i></button><h2>تحويل ودفع</h2><span></span></div><div class="tabs"><button class="active">رقم الجوال</button><button>معرّف المحفظة</button><button onclick="alert('كاميرا QR جاهزة للربط عبر CameraX')">ماسح QR</button></div><div class="panel form-panel"><div class="field"><label>المستلم</label><input id="recipient" type="tel" aria-label="المستلم"></div><div class="field"><label>المبلغ</label><div class="amount-input"><input id="transfer-amount" type="number" min="0" inputmode="decimal" oninput="renderWords(this.value,'transfer-words');updateTransferFee()" aria-label="المبلغ"><select id="transfer-currency" onchange="renderWords(document.getElementById('transfer-amount').value,'transfer-words');updateTransferFee()" aria-label="عملة التحويل"><option>YER</option><option>SAR</option><option>USD</option></select></div><div id="transfer-words" class="words"></div></div><div class="field"><label>ملاحظة اختيارية</label><input aria-label="الملاحظة"></div><div class="fee-box">العمولة التقديرية (1%): <b id="transfer-fee">0 ر.ي</b></div><button class="primary" onclick="doTransfer()">تأكيد التحويل <i class="fa-solid fa-lock"></i></button></div></div></section>
 
 <section id="split" class="screen inner-screen"><div class="app"><div class="topbar"><button class="icon-btn" onclick="goHome()"><i class="fa-solid fa-arrow-right"></i></button><h2>تقسيم الفاتورة</h2><span></span></div><div class="panel form-panel"><div class="field"><label>إجمالي الفاتورة (ر.ي)</label><input id="split-total" type="number" value="5000" oninput="calcSplit()"></div><div class="field"><label>عدد الأشخاص</label><input id="split-people" type="number" value="3" min="2" max="30" oninput="calcSplit()"></div><div class="split-result"><span>حصة كل شخص</span><strong id="split-share">1,666.67 ر.ي</strong><small>العمولة الإجمالية: <b id="split-fee">50 ر.ي</b></small></div><button class="primary" onclick="alert('تم إرسال طلبات التقسيم للمجموعة')">بث طلبات الدفع <i class="fa-solid fa-bullhorn"></i></button></div></div></section>
 
@@ -75,7 +82,7 @@
 
 <section id="bills" class="screen inner-screen"><div class="app"><div class="topbar"><button class="icon-btn" onclick="goHome()"><i class="fa-solid fa-arrow-right"></i></button><h2>دفع الفواتير</h2><span></span></div><div class="voucher-grid"><div class="voucher"><b>كهرباء</b><small>فاتورة الشبكة العامة</small><button onclick="payBill('كهرباء',3500)">دفع الآن</button></div><div class="voucher"><b>ماء</b><small>مؤسسة المياه</small><button onclick="payBill('ماء',1200)">دفع الآن</button></div><div class="voucher"><b>إنترنت</b><small>يمن نت / TeleYemen</small><button onclick="payBill('إنترنت',8000)">دفع الآن</button></div><div class="voucher"><b>رسوم جامعية</b><small>أقساط دراسية</small><button onclick="payBill('الرسوم الجامعية',45000)">دفع الآن</button></div><div class="voucher"><b>رسوم حكومية</b><small>خدمات E-Sadad</small><button onclick="payBill('الرسوم الحكومية',5000)">دفع الآن</button></div><div class="voucher"><b>زكاة وتبرعات</b><small>جمعيات موثوقة</small><button onclick="payBill('تبرع خيري',1000)">دفع الآن</button></div></div></div></section>
 
-<section id="cash" class="screen inner-screen"><div class="app"><div class="topbar"><button class="icon-btn" onclick="goHome()"><i class="fa-solid fa-arrow-right"></i></button><h2>سحب وإيداع نقدي</h2><span></span></div><div class="tabs"><button class="active" onclick="cashTab('w',this)">سحب</button><button onclick="cashTab('d',this)">إيداع</button></div><div class="panel form-panel"><div class="field"><label>أقرب وكيل / نقطة خدمة</label><input value="وكيل السبعين - صنعاء" aria-label="الوكيل"></div><div class="field"><label>المبلغ</label><div class="amount-input"><input id="cash-amount" type="number" min="0"><select><option>YER</option><option>SAR</option><option>USD</option></select></div></div><div class="fee-box">رمز العملية المؤقت: <b>7 4 3 9</b></div><button class="primary" id="cash-btn" onclick="submitCash()">إنشاء طلب سحب <i class="fa-solid fa-qrcode"></i></button></div></div></section>
+<section id="cash" class="screen inner-screen"><div class="app"><div class="topbar"><button class="icon-btn" onclick="goHome()"><i class="fa-solid fa-arrow-right"></i></button><h2>سحب وإيداع نقدي</h2><span></span></div><div class="tabs"><button class="active" onclick="cashTab('w',this)">سحب</button><button onclick="cashTab('d',this)">إيداع</button></div><div class="panel form-panel"><div class="field"><label>أقرب وكيل / نقطة خدمة</label><input value="وكيل السبعين - صنعاء" aria-label="الوكيل"></div><div class="field"><label>المبلغ</label><div class="amount-input"><input id="cash-amount" type="number" min="0" inputmode="decimal" aria-label="المبلغ"><select id="cash-currency" aria-label="عملة السحب أو الإيداع"><option>YER</option><option>SAR</option><option>USD</option></select></div></div><div class="fee-box">رمز العملية المؤقت: <b>7 4 3 9</b></div><button class="primary" id="cash-btn" onclick="submitCash()">إنشاء طلب سحب <i class="fa-solid fa-qrcode"></i></button></div></div></section>
 
 <section id="merchants" class="screen inner-screen"><div class="app"><div class="topbar"><button class="icon-btn" onclick="goHome()"><i class="fa-solid fa-arrow-right"></i></button><h2>الدفع للتجار</h2><span></span></div><div class="panel"><div class="transaction"><div class="tx-icon"><i class="fa-solid fa-utensils"></i></div><div class="tx-main"><b>مطعم الرياض</b><small>صنعاء - شارع حدة</small></div><button class="link" onclick="payMerchant('مطعم الرياض',1500)">دفع</button></div><div class="transaction"><div class="tx-icon"><i class="fa-solid fa-cart-shopping"></i></div><div class="tx-main"><b>سوبرماركت النور</b><small>عدن - المعلا</small></div><button class="link" onclick="payMerchant('سوبرماركت النور',2500)">دفع</button></div><div class="transaction"><div class="tx-icon"><i class="fa-solid fa-pump-medical"></i></div><div class="tx-main"><b>صيدلية الشفاء</b><small>تعز - جمال</small></div><button class="link" onclick="payMerchant('صيدلية الشفاء',900)">دفع</button></div></div><button class="primary" style="margin-top:16px" onclick="alert('كاميرا QR جاهزة للربط عبر CameraX لمسح رمز التاجر')">مسح رمز تاجر جديد <i class="fa-solid fa-qrcode"></i></button></div></section>
 
@@ -126,7 +133,7 @@
 <div class="mode-toggle"><button data-d="comfortable" onclick="setDensity('comfortable')">مريح</button><button data-d="compact" onclick="setDensity('compact')">مضغوط</button></div>
 
 <div class="section-head"><h2>اللغة والعملة</h2></div>
-<select class="settings-select" id="lang-select" onchange="localStorage.setItem('nw_lang',this.value)"><option value="ar">العربية</option><option value="en">English</option></select>
+<select class="settings-select" id="lang-select" onchange="localStorage.setItem('nw_lang',this.value)"><option value="ar">العربية</option><option value="en" disabled>English (قريباً)</option></select>
 <select class="settings-select" id="curr-select" onchange="localStorage.setItem('nw_defcurrency',this.value)"><option value="YER">ريال يمني (افتراضي)</option><option value="SAR">ريال سعودي</option><option value="USD">دولار أمريكي</option></select>
 
 <div class="section-head"><h2>الإشعارات</h2></div>
@@ -153,25 +160,29 @@
 
 <script>
 /* ===================== أدوات مساعدة عامة ===================== */
-function hashPin(p){let h=5381;for(let i=0;i<p.length;i++)h=((h<<5)+h)+p.charCodeAt(i);return String(h)}
 function showOnly(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelector('.bottom-nav').style.display='none'}
-function openScreen(id){showOnly(id)}
+function openScreen(id){if(panicActive)return; showOnly(id)}
 function showSettings(){openScreen('settings')}
-function goHome(){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('dashboard').classList.add('active');document.querySelector('.bottom-nav').style.display='flex'}
+function goHome(){if(panicActive)return; document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('dashboard').classList.add('active');document.querySelector('.bottom-nav').style.display='flex'}
 
 /* ===================== مكوّن لوحة أرقام قابل لإعادة الاستخدام ===================== */
-function buildPad(padEl,onDigit){padEl.innerHTML='';shuffleArr([1,2,3,4,5,6,7,8,9,0]).forEach(n=>{const b=document.createElement('button');b.textContent=n;b.onclick=()=>onDigit(n);padEl.appendChild(b)})}
+function buildPad(padEl,onDigit){padEl.innerHTML='';shuffleArr([1,2,3,4,5,6,7,8,9,0]).forEach(n=>{const b=document.createElement('button');b.type='button';b.textContent=n;b.setAttribute('aria-label','رقم '+n);b.onclick=()=>onDigit(n);padEl.appendChild(b)})}
 function shuffleArr(a){return a.sort(()=>Math.random()-.5)}
 
-/* ===================== حالة الحساب والتسجيل ===================== */
-const panicPin="2580";
+/* ===================== حالة الحساب والتسجيل =====================
+   ملاحظة أمنية: لم يعد هناك أي رمز طوارئ ثابت مكتوب في الكود. إن اختار
+   المستخدم تفعيل رمز الطوارئ أثناء التسجيل، يُخزَّن verifier خاص به
+   (بنفس أسلوب PBKDF2) منفصل تماماً عن رمز الدخول الأساسي. */
 function getAccount(){try{return JSON.parse(localStorage.getItem('nw_account'))}catch(e){return null}}
 function saveAccount(acc){localStorage.setItem('nw_account',JSON.stringify(acc))}
 
-let regPin="",regPin2="";
+let sessionKey=null;       // مفتاح AES-GCM للجلسة الحالية — بالذاكرة فقط، لا يُكتب على القرص أبداً
+let panicActive=false;     // هل الجلسة الحالية في "الوضع الآمن"؟
+
+let regPin="",regPin2="",regPanicPin="";
 function regGoStep2(){
   const name=document.getElementById('reg-name').value.trim(),phone=document.getElementById('reg-phone').value.trim();
-  if(!name||phone.length<7){alert('الرجاء إدخال الاسم ورقم جوال صحيح');return}
+  if(!name||!/^7\d{8}$/.test(phone)){alert('الرجاء إدخال الاسم ورقم جوال يمني صحيح (يبدأ بـ7 و9 أرقام)');return}
   document.getElementById('reg-step1').classList.add('hidden');
   document.getElementById('reg-step2').classList.remove('hidden');
   document.getElementById('rd1').classList.remove('active');document.getElementById('rd2').classList.add('active');
@@ -190,9 +201,7 @@ function regGoStep3(){
     if(regPin2.length<4){regPin2+=n;document.getElementById('reg-pin-display2').textContent='•'.repeat(regPin2.length);
       if(regPin2.length===4){
         if(regPin2===regPin){
-          const name=document.getElementById('reg-name').value.trim(),phone=document.getElementById('reg-phone').value.trim();
-          saveAccount({name:name,phone:phone,pinHash:hashPin(regPin)});
-          goToLogin();
+          regGoStep4();
         }else{
           document.getElementById('reg-err2').textContent='الرمزان غير متطابقين، حاول مجدداً';
           document.getElementById('reg-pin-display2').classList.add('shake');
@@ -202,48 +211,103 @@ function regGoStep3(){
       }}
   });
 }
+function regGoStep4(){
+  document.getElementById('reg-step3').classList.add('hidden');
+  document.getElementById('reg-step4').classList.remove('hidden');
+  document.getElementById('rd3').classList.remove('active');document.getElementById('rd4').classList.add('active');
+  regPanicPin="";document.getElementById('reg-err3').textContent='';
+  document.getElementById('reg-pin-display3').textContent='••••';
+  buildPad(document.getElementById('reg-pin-pad3'),n=>{
+    if(regPanicPin.length<4){regPanicPin+=n;document.getElementById('reg-pin-display3').textContent='•'.repeat(regPanicPin.length);
+      if(regPanicPin.length===4){
+        if(regPanicPin===regPin){
+          document.getElementById('reg-err3').textContent='اختر رمزاً مختلفاً عن رمز الدخول الأساسي';
+          regPanicPin="";document.getElementById('reg-pin-display3').textContent='••••';
+        }else{
+          finishRegistration(regPanicPin);
+        }
+      }}
+  });
+}
+function skipPanicSetup(){finishRegistration(null)}
+async function finishRegistration(panicPin){
+  const name=document.getElementById('reg-name').value.trim(),phone=document.getElementById('reg-phone').value.trim();
+  const salt=SecureStore.randSalt();
+  const pinHash=await SecureStore.pinVerifier(regPin,salt);
+  const acc={name,phone,salt,pinHash};
+  if(panicPin){
+    acc.panicSalt=SecureStore.randSalt();
+    acc.panicHash=await SecureStore.pinVerifier(panicPin,acc.panicSalt);
+  }
+  saveAccount(acc);
+  sessionKey=await SecureStore.deriveAesKey(regPin,salt);
+  await saveLedger({balance:0,totalIn:0,totalOut:0,transactions:[],goals:{savings:0,kids:0}});
+  goToLogin();
+}
 
-let loginPin="",loginAttempts=0,lockedUntil=0;
+/* ===================== حالة قفل محاولات الدخول — مُخزَّنة (لا تُصفَّر بإعادة فتح التطبيق) ===================== */
+function loadLoginState(){try{return JSON.parse(localStorage.getItem('nw_loginstate'))||{attempts:0,lockedUntil:0}}catch(e){return {attempts:0,lockedUntil:0}}}
+function saveLoginState(s){localStorage.setItem('nw_loginstate',JSON.stringify(s))}
+
+let loginPin="";
 function initLoginPad(){
   const acc=getAccount();
   document.getElementById('login-user-name').textContent=acc?('مرحباً '+acc.name.split(' ')[0]+'، أدخل رمز الدخول'):'أدخل رمز الدخول الآمن';
   loginPin="";document.getElementById('pin-display').textContent='••••';document.getElementById('login-err').textContent='';
+  const st=loadLoginState();
+  if(Date.now()<st.lockedUntil) armLockCountdown(st.lockedUntil);
   armLoginPad();
 }
 function armLoginPad(){
   buildPad(document.getElementById('pin-pad'),n=>{
-    if(Date.now()<lockedUntil){shakeErr('pin-display');return}
+    const st=loadLoginState();
+    if(Date.now()<st.lockedUntil){shakeErr('pin-display');return}
     if(loginPin.length<4){loginPin+=n;document.getElementById('pin-display').textContent='•'.repeat(loginPin.length);
       if(loginPin.length===4)doLogin()}
   });
 }
+function armLockCountdown(until){
+  const timer=setInterval(()=>{
+    const remain=Math.ceil((until-Date.now())/1000);
+    if(remain<=0){clearInterval(timer);saveLoginState({attempts:0,lockedUntil:0});document.getElementById('login-err').textContent='';}
+    else document.getElementById('login-err').textContent='القفل المؤقت — '+remain+' ثانية متبقية';
+  },1000);
+}
 function shakeErr(id){document.getElementById(id).classList.add('shake');setTimeout(()=>document.getElementById(id).classList.remove('shake'),400)}
-function doLogin(){
-  if(loginPin===panicPin){panicMode();return}
+async function doLogin(){
   const acc=getAccount();
-  if(acc && hashPin(loginPin)===acc.pinHash){
-    loginAttempts=0;
+  if(!acc)return;
+  const enteredPin=loginPin;
+  // تحقق من رمز الطوارئ أولاً (إن كان مفعّلاً)، بمقارنة verifier منفصل تماماً عن رمز الدخول الأساسي
+  if(acc.panicHash){
+    const panicMatch=await SecureStore.pinVerifier(enteredPin,acc.panicSalt);
+    if(panicMatch===acc.panicHash){enterPanicMode();return}
+  }
+  const candidate=await SecureStore.pinVerifier(enteredPin,acc.salt);
+  if(candidate===acc.pinHash){
+    saveLoginState({attempts:0,lockedUntil:0});
+    sessionKey=await SecureStore.deriveAesKey(enteredPin,acc.salt);
+    panicActive=false;
     document.getElementById('login').classList.remove('active');
     document.getElementById('dashboard').classList.add('active');
     document.querySelector('.bottom-nav').style.display='flex';
     document.getElementById('dash-welcome').textContent='أهلاً '+acc.name.split(' ')[0]+'،';
-    renderDashboard();
+    await renderDashboard();
   }else{
-    loginAttempts++;
+    const st=loadLoginState();
+    st.attempts=(st.attempts||0)+1;
     shakeErr('pin-display');
     loginPin="";document.getElementById('pin-display').textContent='••••';
     armLoginPad(); // إعادة ترتيب الأرقام عشوائياً بعد كل محاولة فاشلة
-    if(loginAttempts>=5){
-      lockedUntil=Date.now()+30000;
-      let secs=30;
+    if(st.attempts>=5){
+      st.lockedUntil=Date.now()+30000;
+      st.attempts=0;
+      saveLoginState(st);
       document.getElementById('login-err').textContent='محاولات كثيرة — تم القفل المؤقت 30 ثانية';
-      const timer=setInterval(()=>{
-        secs--;
-        if(secs<=0||Date.now()>=lockedUntil){clearInterval(timer);loginAttempts=0;document.getElementById('login-err').textContent='';}
-        else document.getElementById('login-err').textContent='القفل المؤقت — '+secs+' ثانية متبقية';
-      },1000);
+      armLockCountdown(st.lockedUntil);
     }else{
-      document.getElementById('login-err').textContent='رمز غير صحيح، حاول مجدداً ('+loginAttempts+'/5)';
+      saveLoginState(st);
+      document.getElementById('login-err').textContent='رمز غير صحيح، حاول مجدداً ('+st.attempts+'/5)';
     }
   }
 }
@@ -252,30 +316,55 @@ function goToLogin(){
   document.getElementById('login').classList.add('active');
   initLoginPad();
 }
-function panicMode(){
+/* ===================== وضع الطوارئ (Panic Mode) — معزول فعلياً الآن =====================
+   أثناء تفعيله: يُخفى شريط التنقل السفلي بالكامل ولا يمكن فتح أي شاشة
+   أخرى (الإعدادات/الإحصاءات/التحويل...) — الخروج الوحيد هو زر "إنهاء
+   الوضع الآمن" الذي يعيد قفل التطبيق ويطلب رمز الدخول الحقيقي من جديد. */
+function enterPanicMode(){
+  panicActive=true;
   document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
   document.getElementById('dashboard').classList.add('active');
-  document.querySelector('.bottom-nav').style.display='flex';
+  document.querySelector('.bottom-nav').style.display='none';
   document.getElementById('main-balance').innerHTML='120.00 <small>ر.ي</small>';
+  document.getElementById('mini-in').innerHTML='120 <small>ر.ي</small>';
+  document.getElementById('mini-out').innerHTML='0 <small>ر.ي</small>';
+  document.getElementById('sub-main').textContent='120 ر.ي';
+  document.getElementById('tx-list').innerHTML='<div class="empty-state"><i class="fa-regular fa-folder-open"></i>لا توجد أي عمليات بعد<small>ابدأ أول عملية من الأزرار أعلاه</small></div>';
   document.getElementById('dash-welcome').textContent='مساحة آمنة مؤقتة';
-  document.querySelector('h1').textContent='الوضع الهادئ مفعل';
+  document.querySelector('#dashboard h1').textContent='الوضع الهادئ مفعل';
+  let exitBtn=document.getElementById('panic-exit-btn');
+  if(!exitBtn){
+    exitBtn=document.createElement('button');
+    exitBtn.id='panic-exit-btn';
+    exitBtn.className='secondary-btn';
+    exitBtn.style.marginBottom='16px';
+    exitBtn.textContent='إنهاء الوضع الآمن (يتطلب رمز الدخول الحقيقي)';
+    exitBtn.onclick=()=>{panicActive=false;sessionKey=null;relockApp()};
+    document.getElementById('dashboard').querySelector('.app').insertBefore(exitBtn,document.getElementById('dashboard').querySelector('.app').firstChild);
+  }
 }
 function confirmLogout(switching){
   if(!confirm(switching?'تسجيل الخروج والعودة لشاشة الدخول؟':'هل تريد تسجيل الخروج؟'))return;
+  sessionKey=null;panicActive=false;
   document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
   document.querySelector('.bottom-nav').style.display='none';
   goToLogin();
 }
 function resetAccount(){
-  if(!confirm('سيتم حذف الحساب المحلي بالكامل من هذا الجهاز. متابعة؟'))return;
+  if(!confirm('سيتم حذف الحساب المحلي وكل سجلاته المالية بالكامل من هذا الجهاز. متابعة؟'))return;
+  const acc=getAccount();
+  if(acc) localStorage.removeItem('nw_ledger_enc_'+acc.phone); // حذف دفتر الحركات أيضاً وليس الحساب فقط
   localStorage.removeItem('nw_account');
+  localStorage.removeItem('nw_loginstate');
+  sessionKey=null;panicActive=false;
   document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
   document.querySelector('.bottom-nav').style.display='none';
   document.getElementById('register').classList.add('active');
   document.getElementById('reg-step1').classList.remove('hidden');
   document.getElementById('reg-step2').classList.add('hidden');
   document.getElementById('reg-step3').classList.add('hidden');
-  document.getElementById('rd1').classList.add('active');document.getElementById('rd2').classList.remove('active');document.getElementById('rd3').classList.remove('active');
+  document.getElementById('reg-step4').classList.add('hidden');
+  document.getElementById('rd1').classList.add('active');document.getElementById('rd2').classList.remove('active');document.getElementById('rd3').classList.remove('active');document.getElementById('rd4').classList.remove('active');
   document.getElementById('reg-name').value='';document.getElementById('reg-phone').value='';
 }
 
@@ -289,9 +378,12 @@ function initChangePin(){
   buildPad(document.getElementById('cp-pin1-pad'),n=>{
     if(cpOld.length<4){cpOld+=n;document.getElementById('cp-pin1-display').textContent='•'.repeat(cpOld.length);
       if(cpOld.length===4){
-        const acc=getAccount();
-        if(acc && hashPin(cpOld)===acc.pinHash){cpStep2()}
-        else{document.getElementById('cp-err1').textContent='الرمز الحالي غير صحيح';cpOld="";document.getElementById('cp-pin1-display').textContent='••••'}
+        (async()=>{
+          const acc=getAccount();
+          const candidate=acc?await SecureStore.pinVerifier(cpOld,acc.salt):null;
+          if(acc && candidate===acc.pinHash){cpStep2()}
+          else{document.getElementById('cp-err1').textContent='الرمز الحالي غير صحيح';cpOld="";document.getElementById('cp-pin1-display').textContent='••••'}
+        })();
       }}
   });
 }
@@ -312,8 +404,19 @@ function cpStep3(){
     if(cpNew2.length<4){cpNew2+=n;document.getElementById('cp-pin3-display').textContent='•'.repeat(cpNew2.length);
       if(cpNew2.length===4){
         if(cpNew2===cpNew){
-          const acc=getAccount();acc.pinHash=hashPin(cpNew);saveAccount(acc);
-          alert('تم تغيير رمز الدخول بنجاح');goHome();
+          (async()=>{
+            const acc=getAccount();
+            // إعادة تشفير دفتر الحركات بالكامل بالمفتاح الجديد قبل تحديث الحساب،
+            // لأن مفتاح التشفير مشتق من رمز الدخول نفسه
+            const oldLedger=await loadLedger();
+            const salt=SecureStore.randSalt();
+            acc.salt=salt;
+            acc.pinHash=await SecureStore.pinVerifier(cpNew,salt);
+            saveAccount(acc);
+            sessionKey=await SecureStore.deriveAesKey(cpNew,salt);
+            await saveLedger(oldLedger);
+            alert('تم تغيير رمز الدخول وإعادة تشفير بياناتك بنجاح');goHome();
+          })();
         }else{
           document.getElementById('cp-err3').textContent='الرمزان غير متطابقين';
           cpNew2="";document.getElementById('cp-pin3-display').textContent='••••';
@@ -330,35 +433,54 @@ function calcSplit(){const t=+document.getElementById('split-total').value||0,p=
 function renderWords(v,id){document.getElementById(id).textContent=v?Tafqeet.toWords(v,document.getElementById('transfer-currency').value):''}
 function cashTab(t,b){cashMode=t;document.querySelectorAll('#cash .tabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('cash-btn').textContent=t==='w'?'إنشاء طلب سحب':'إنشاء طلب إيداع'}
 
-/* ===================== السجل المالي الحقيقي (يبدأ من صفر لكل حساب) ===================== */
-function ledgerKey(){const acc=getAccount();return 'nw_ledger_'+(acc?acc.phone:'guest')}
-function getLedger(){try{return JSON.parse(localStorage.getItem(ledgerKey()))}catch(e){return null}}
-function ensureLedger(){let l=getLedger();if(!l){l={balance:0,totalIn:0,totalOut:0,transactions:[]};localStorage.setItem(ledgerKey(),JSON.stringify(l))}return l}
+/* ===================== السجل المالي — مشفّر AES-GCM بالكامل الآن ===================== */
+const FX={YER:1,SAR:70,USD:530}; // 1 وحدة من العملة = هذا العدد من الريال اليمني (نفس الأسعار المعروضة سابقاً كنص فقط، أصبحت مُطبَّقة فعلياً)
+function toYER(amount,currency){return (Number(amount)||0)*(FX[currency]||1)}
+function ledgerKey(){const acc=getAccount();return 'nw_ledger_enc_'+(acc?acc.phone:'guest')}
+async function loadLedger(){
+  const raw=localStorage.getItem(ledgerKey());
+  const empty={balance:0,totalIn:0,totalOut:0,transactions:[],goals:{savings:0,kids:0}};
+  if(!raw||!sessionKey)return empty;
+  try{
+    const payload=JSON.parse(raw);
+    const l=await SecureStore.decryptWithKey(sessionKey,payload);
+    if(!l.goals)l.goals={savings:0,kids:0};
+    return l;
+  }catch(e){console.error('فشل فك تشفير دفتر الحركات',e);return empty}
+}
+async function saveLedger(l){
+  if(!sessionKey)return; // لا يوجد مفتاح جلسة نشط (غير مسجَّل دخول) — لا نكتب شيئاً
+  const payload=await SecureStore.encryptWithKey(sessionKey,l);
+  localStorage.setItem(ledgerKey(),JSON.stringify(payload));
+}
 function fmt(n){return (Math.round(n*100)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
-function addTx(title,sub,amount,type){
-  amount=Math.abs(+amount||0);
-  if(amount<=0){alert('الرجاء إدخال مبلغ صحيح');return false}
-  const l=ensureLedger();
+async function addTx(title,sub,amountYER,type){
+  amountYER=Math.abs(Number(amountYER));
+  if(!Number.isFinite(amountYER)||amountYER<=0){alert('الرجاء إدخال مبلغ صحيح');return false}
+  const l=await loadLedger();
   if(type==='out'){
-    if(amount>l.balance){alert('الرصيد غير كافٍ لإتمام هذه العملية');return false}
-    l.balance-=amount;l.totalOut=(l.totalOut||0)+amount;
-  }else{l.balance+=amount;l.totalIn=(l.totalIn||0)+amount}
-  l.transactions.unshift({title:title,sub:sub,amount:amount,type:type,ts:Date.now()});
+    if(amountYER>l.balance){alert('الرصيد غير كافٍ لإتمام هذه العملية');return false}
+    l.balance-=amountYER;l.totalOut=(l.totalOut||0)+amountYER;
+  }else{l.balance+=amountYER;l.totalIn=(l.totalIn||0)+amountYER}
+  l.transactions.unshift({title:title,sub:sub,amount:amountYER,type:type,ts:Date.now()});
   if(l.transactions.length>60)l.transactions.length=60;
-  localStorage.setItem(ledgerKey(),JSON.stringify(l));
-  renderDashboard();
+  await saveLedger(l);
+  await renderDashboard();
   return true;
 }
-function renderDashboard(){
-  const l=ensureLedger();
+let showAllTx=false;
+async function renderDashboard(){
+  const l=await loadLedger();
   document.getElementById('main-balance').innerHTML=fmt(l.balance)+' <small>ر.ي</small>';
   document.getElementById('mini-in').innerHTML=fmt(l.totalIn||0)+' <small>ر.ي</small>';
   document.getElementById('mini-out').innerHTML=fmt(l.totalOut||0)+' <small>ر.ي</small>';
+  document.getElementById('sub-main').textContent=fmt(l.balance)+' ر.ي';
   const box=document.getElementById('tx-list');
   if(!l.transactions.length){
     box.innerHTML='<div class="empty-state"><i class="fa-regular fa-folder-open"></i>لا توجد أي عمليات بعد<small>ابدأ أول عملية من الأزرار أعلاه</small></div>';
   }else{
-    box.innerHTML=l.transactions.slice(0,12).map(t=>{
+    const list=showAllTx?l.transactions:l.transactions.slice(0,12);
+    box.innerHTML=list.map(t=>{
       const d=new Date(t.ts);const time=d.toLocaleDateString('ar')+' '+d.toLocaleTimeString('ar',{hour:'2-digit',minute:'2-digit'});
       const icon=t.type==='in'?'fa-arrow-down':'fa-arrow-up';
       const cls=t.type==='in'?'positive':'negative';
@@ -367,24 +489,38 @@ function renderDashboard(){
     }).join('');
     document.querySelectorAll('.private-value').forEach(e=>e.classList.toggle('masked',privacy));
   }
+  const viewAllBtn=document.getElementById('tx-viewall');
+  if(viewAllBtn)viewAllBtn.textContent=showAllTx?'إخفاء':'عرض الكل';
 }
+function toggleAllTx(){showAllTx=!showAllTx;renderDashboard()}
 
-/* ===================== ربط الشاشات بالعمليات الحقيقية ===================== */
-function doTransfer(){
+/* ===================== ربط الشاشات بالعمليات الحقيقية (مع تحويل عملة فعلي) ===================== */
+function updateTransferFee(){
+  const amt=document.getElementById('transfer-amount').value;
+  const cur=document.getElementById('transfer-currency').value;
+  const yer=toYER(amt,cur);
+  document.getElementById('transfer-fee').textContent=fmt(yer*0.01)+' ر.ي';
+}
+async function doTransfer(){
   const r=document.getElementById('recipient').value.trim(),amt=document.getElementById('transfer-amount').value;
+  const cur=document.getElementById('transfer-currency').value;
   if(!r){alert('أدخل رقم أو معرّف المستلم');return}
-  if(addTx('تحويل إلى '+r,'صادر · '+document.getElementById('transfer-currency').value,amt,'out')){
+  const yer=toYER(amt,cur);
+  if(await addTx('تحويل إلى '+r,'صادر · '+amt+' '+cur+(cur!=='YER'?' (≈'+fmt(yer)+' ر.ي)':''),yer,'out')){
     alert('تم التحويل بنجاح في بيئة المحاكاة الآمنة');goHome();
   }
 }
-function payBill(name,amount){if(addTx('فاتورة '+name,'مدفوعة الآن',amount,'out'))alert('تم تسديد فاتورة '+name+' بنجاح')}
-function buyVoucher(name,amount){if(addTx('شحن '+name,'قسيمة رقمية',amount,'out'))alert('تمت عملية الشراء بنجاح')}
-function payMerchant(name,amount){if(addTx('دفع لـ '+name,'تاجر',amount,'out'))alert('تم الدفع لـ '+name+' بنجاح')}
+async function payBill(name,amount){if(await addTx('فاتورة '+name,'مدفوعة الآن',amount,'out'))alert('تم تسديد فاتورة '+name+' بنجاح')}
+async function buyVoucher(name,amount){if(await addTx('شحن '+name,'قسيمة رقمية',amount,'out'))alert('تمت عملية الشراء بنجاح')}
+async function payMerchant(name,amount){if(await addTx('دفع لـ '+name,'تاجر',amount,'out'))alert('تم الدفع لـ '+name+' بنجاح')}
+async function payRemittance(provider){if(await addTx('حوالة صادرة عبر '+provider,'شبكة الحوالات المحلية',1000,'out'))alert('تم إرسال الحوالة عبر '+provider+' بنجاح')}
 let cashMode='w';
-function submitCash(){
+async function submitCash(){
   const amt=document.getElementById('cash-amount').value;
-  if(cashMode==='w'){if(addTx('سحب نقدي','عبر الوكيل',amt,'out')){alert('تم إنشاء طلب السحب، أظهر الرمز للوكيل');goHome()}}
-  else{if(addTx('إيداع نقدي','عبر الوكيل',amt,'in')){alert('تم تسجيل طلب الإيداع بنجاح');goHome()}}
+  const cur=document.getElementById('cash-currency').value;
+  const yer=toYER(amt,cur);
+  if(cashMode==='w'){if(await addTx('سحب نقدي','عبر الوكيل · '+amt+' '+cur,yer,'out')){alert('تم إنشاء طلب السحب، أظهر الرمز للوكيل');goHome()}}
+  else{if(await addTx('إيداع نقدي','عبر الوكيل · '+amt+' '+cur,yer,'in')){alert('تم تسجيل طلب الإيداع بنجاح');goHome()}}
 }
 
 /* ===================== شاشة المحافظ اليمنية (تشغيل بيني) ===================== */
@@ -399,24 +535,33 @@ document.addEventListener('click',function(e){
   const chip=e.target.closest('.wallet-chip');
   if(chip){document.querySelectorAll('.wallet-chip').forEach(c=>c.classList.remove('selected'));chip.classList.add('selected');selectedWallet=chip.dataset.w}
 });
-function submitWalletOp(){
+async function submitWalletOp(){
   const peer=document.getElementById('wallet-peer').value.trim(),amt=document.getElementById('wallet-amount').value;
   if(!peer){alert('أدخل رقم الطرف الآخر');return}
   if(walletMode==='recv'){
-    if(addTx('حوالة واردة عبر '+selectedWallet,'من '+peer,amt,'in')){alert('تم استلام الحوالة من '+selectedWallet+' بنجاح');goHome()}
+    if(await addTx('حوالة واردة عبر '+selectedWallet,'من '+peer,amt,'in')){alert('تم استلام الحوالة من '+selectedWallet+' بنجاح');goHome()}
   }else{
-    if(addTx('تحويل صادر عبر '+selectedWallet,'إلى '+peer,amt,'out')){alert('تم إرسال المبلغ عبر '+selectedWallet+' بنجاح');goHome()}
+    if(await addTx('تحويل صادر عبر '+selectedWallet,'إلى '+peer,amt,'out')){alert('تم إرسال المبلغ عبر '+selectedWallet+' بنجاح');goHome()}
   }
 }
 
-/* ===================== حظر لقطة الشاشة (يتحكم فيها المستخدم) ===================== */
+/* ===================== حظر لقطة الشاشة (يتحكم فيها المستخدم، ويُطبَّق من جديد عند كل إقلاع) ===================== */
 function toggleScreenshotBlock(){
   const enabled=document.getElementById('sec-screenshot').checked;
+  try{ if(window.Android && Android.setSecureScreen){ Android.setSecureScreen(enabled) } }catch(e){}
+}
+function applySavedScreenshotPref(){
+  let sec={};try{sec=JSON.parse(localStorage.getItem('nw_sec'))||{}}catch(e){}
+  const enabled=sec.screenshot!==false; // افتراضياً مفعّل (مطابق لسلوك MainActivity.onCreate)
+  document.getElementById('sec-screenshot').checked=enabled;
   try{ if(window.Android && Android.setSecureScreen){ Android.setSecureScreen(enabled) } }catch(e){}
 }
 
 /* ===================== إعادة القفل عند العودة للتطبيق (يُستدعى من الكود الأصلي) ===================== */
 function relockApp(){
+  sessionKey=null; // مسح مفتاح فك التشفير من الذاكرة فوراً — لا يبقى أي وصول للبيانات دون إعادة إدخال الرمز
+  panicActive=false;
+  const exitBtn=document.getElementById('panic-exit-btn');if(exitBtn)exitBtn.remove();
   if(!getAccount())return; // ما فيه حساب بعد، خليه على شاشة التسجيل
   document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
   document.querySelector('.bottom-nav').style.display='none';
@@ -439,6 +584,7 @@ function markActive(){
 /* ===================== نقطة الانطلاق ===================== */
 function boot(){
   markActive();
+  applySavedScreenshotPref();
   const savedLang=localStorage.getItem('nw_lang');if(savedLang)document.getElementById('lang-select').value=savedLang;
   const savedCurr=localStorage.getItem('nw_defcurrency');if(savedCurr)document.getElementById('curr-select').value=savedCurr;
   const savedLock=localStorage.getItem('nw_autolock');if(savedLock)document.getElementById('lock-select').value=savedLock;

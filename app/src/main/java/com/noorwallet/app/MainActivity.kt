@@ -47,6 +47,8 @@ class MainActivity : ComponentActivity() {
             settings.allowFileAccess = false
             settings.allowContentAccess = false
             settings.setSupportZoom(false)
+            setOnLongClickListener { true } // يمتص اللمس الطويل فيمنع قائمة "نسخ" الأصلية حتى لو تجاهل WebView إعداد CSS
+            isHapticFeedbackEnabled = false
             addJavascriptInterface(SecurityBridge(), "Android")
             webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest) = true

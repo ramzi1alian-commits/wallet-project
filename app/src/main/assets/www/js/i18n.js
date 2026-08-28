@@ -1,9 +1,12 @@
 (function () {
   "use strict";
+  /* ملاحظة: هذا القاموس غير مُستخدَم حالياً من index.html (كل النصوص هناك
+     مكتوبة مباشرة بالعربية). أُبقي عليه هنا لأنه سيكون أساس أي دعم إنجليزي
+     حقيقي مستقبلاً، لكن يجب عدم الاعتماد عليه كدليل على أن الترجمة مفعّلة. */
   const ar = {
-    appName:"نور", welcome:"مرحباً بعودتك", loginHint:"سجّل دخولك إلى محفظتك الآمنة", royalWelcome:"محفظتك، بأمان ملكي",
+    appName:"زاد", welcome:"مرحباً بعودتك", loginHint:"سجّل دخولك إلى محفظتك الآمنة", royalWelcome:"محفظتك، بأمان ملكي",
     phone:"رقم الجوال", password:"كلمة المرور", login:"تسجيل الدخول", forgot:"نسيت كلمة المرور؟",
-    secure:"تشفير من الطرف إلى الطرف", balance:"الرصيد المتاح", hide:"إخفاء الرصيد", show:"إظهار الرصيد",
+    secure:"تشفير محلي على جهازك (AES-GCM)", balance:"الرصيد المتاح", hide:"إخفاء الرصيد", show:"إظهار الرصيد",
     addMoney:"إضافة أموال", send:"إرسال", receive:"استلام", pay:"دفع فاتورة", recent:"آخر العمليات",
     all:"الكل", income:"إيداع", expense:"مصروف", invoice:"الفواتير", settle:"تسديد الآن",
     transfer:"تحويل سريع", recipient:"المستلم", amount:"المبلغ", note:"ملاحظة اختيارية", continue:"متابعة",
@@ -11,7 +14,7 @@
     security:"الأمان والخصوصية", biometric:"الدخول بالبصمة", twoFactor:"التحقق بخطوتين",
     alerts:"تنبيهات العمليات", language:"اللغة", logout:"تسجيل الخروج", today:"اليوم",
     invoiceTitle:"فواتير مستحقة", total:"الإجمالي", success:"تمت العملية بنجاح", cancel:"إلغاء",
-    admin:"الإدارة", encrypted:"محمي ومشفّر", hello:"أهلاً أحمد", viewAll:"عرض الكل",
+    admin:"الإدارة", encrypted:"محمي ومشفّر", viewAll:"عرض الكل",
     electricity:"كهرباء", internet:"إنترنت", water:"مياه", coffee:"مقهى نور",
     dynamicPin:"رمز الدخول الديناميكي", panic:"دخول الطوارئ الآمن", privacy:"خصوصية",
     privacyShow:"إظهار", privacyHide:"إخفاء", currencies:"العملات", yer:"ريال يمني",
